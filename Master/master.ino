@@ -5,6 +5,9 @@ const int EnTxPin = 0; // D3 - HIGH:TX y LOW:RX
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
 
+int slave1 = 101;
+int slave2 = 102;
+
 byte degree[] = {
     B01100,
     B10010,
@@ -42,34 +45,40 @@ void setup()
 
 void loop()
 {
+    Serial.print("<");    // Inicio de trama
+    Serial.print(slave1); // Dirección del esclavo
+    Serial.print("S1");   // Datos del sensor 1
+    Serial.print("S2");   // Datos del sensor 2
+    Serial.print(">");    // Fin de trama
+    Serial.flush();       //Esperamos hasta que se envíen los datos
+    delay(100);
 
-    int lectura = analogRead(0);                //leemos el valor del potenciómetro (de 0 a 1023)
-    int angulo = map(lectura, 0, 1023, 0, 180); // escalamos la lectura a un valor de ángulo (entre 0 y 180)
-    //---enviamos el ángulo para mover el servo------
-    Serial.print("I");    //inicio de trama
-    Serial.print("101");  //dirección del esclavo
-    Serial.print("S");    //función  S para indicarle que vamos a mover el servo
-    Serial.print(angulo); //ángulo  o dato
-    Serial.print("F");    //fin de trama
-    //----------------------------
-    delay(50);
-    //---solicitamos una lectura del sensor----------
-    Serial.print("I");   //inicio de trama
-    Serial.print("101"); //direccion del esclavo
-    Serial.print("L");   //L para indicarle que vamos a Leer el sensor
-    Serial.print("F");   //fin de trama
-    Serial.flush();      //Esperamos hasta que se envíen los datos
     //----Leemos la respuesta del Esclavo-----
-    digitalWrite(EnTxPin, LOW); //RS485 como receptor
-    if (Serial.find("i"))       //esperamos el inicio de trama
-    {
-        int esclavo = Serial.parseInt();            //recibimos la direccion del esclavo
-        int dato = Serial.parseInt();               //recibimos el dato
-        if (Serial.read() == 'f' && esclavo == 101) //si fin de trama y direccion son los correctos
-        {
-            funcion(dato); //realizamos la acción con el dato recibido
-        }
-    }
+    digitalWrite(EnTxPin, LOW);       //RS485 como receptor
+                                      // if (Serial.find("i"))
+                                      // {
+    String msj = Serial.readString(); // Se lee una línea
+    lcd.setCursor(0, 1);
+    lcd.print("S1:");
+    lcd.print(msj);
+    // }
+
+    // lcd.setCursor(8, 1);
+    // lcd.print("S2:");
+
+    // Serial.println(msj);
+
+    // }
+
+    // if (Serial.find("i"))       //esperamos el inicio de trama
+    // {
+    //     int esclavo = Serial.parseInt();            //recibimos la direccion del esclavo
+    //     int dato = Serial.parseInt();               //recibimos el dato
+    //     if (Serial.read() == 'f' && esclavo == 101) //si fin de trama y direccion son los correctos
+    //     {
+    //         funcion(dato); //realizamos la acción con el dato recibido
+    //     }
+    // }
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
                                  //----------fin de la respuesta----------
 }

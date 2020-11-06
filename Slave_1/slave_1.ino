@@ -1,41 +1,54 @@
 const int enTxPin = 2; // HIGH:TX y LOW:RX
 const int myDir = 101; //dir del esclavo
 
+const int waterSensorPin = A0;
+const int lightSensorPin = A1;
+
 void setup()
 {
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
+
     pinMode(enTxPin, OUTPUT);
     digitalWrite(enTxPin, LOW); //RS485 como receptor
+
+    pinMode(waterSensorPin, INPUT);
+    pinMode(lightSensorPin, INPUT);
 }
 
 void loop()
 {
-    if (Serial.available())
+    if (Serial.available()) // Si hay datos nuevos
     {
-        if (Serial.read() == 'I') //Si recibimos el inicio de trama
+        // Se lee una línea
+        String msj = Serial.readString();
+        if (msj.startsWith(String("<" + String(myDir))) && msj.endsWith(">")) //Si el inicio y fin del mensaje son correctos y la dirección corresponde a este esclavo
         {
-            int dir = Serial.parseInt(); //recibimos la dir
-            if (dir == myDir)            //Si dir es la nuestra
-            {
-                char funcion = Serial.read(); //leemos el carácter de función
+            msj = msj.substring(4, msj.length() - 1); // Se descarta la información que no sea de los sensores a leer
 
-                if (funcion == 'S') //Si el caracter es L se solicita datos del sensor
+            Serial.print("<100");
+            while (msj.length() != 0)
+            {
+                if (msj.charAt(0) == 'S') // Se lee todos los sensores solicitados
                 {
-                    if (Serial.read() == 'F') //Si el fin de trama es el correcto
+                    switch (msj.charAt(1))
                     {
-                        int lectura = analogRead(0); //realizamos  la lectura del sensor
-                        digitalWrite(enTxPin, HIGH); //rs485 como transmisor
-                        Serial.print("i");           //inicio de trama
-                        Serial.print(myDir);         //dir
-                        Serial.print(",");
-                        Serial.print(lectura);      //valor del sensor
-                        Serial.print("f");          //fin de trama
-                        Serial.flush();             //Esperamos hasta que se envíen los datos
-                        digitalWrite(enTxPin, LOW); //RS485 como receptor
+                    case '1':
+                        Serial.print("S1");
+                        Serial.print(analogRead(waterSensorPin));
+                        break;
+                    case '2':
+                        Serial.print("S2");
+                        Serial.print(analogRead(lightSensorPin));
+                        break;
                     }
+
+                    msj = msj.substring(2, msj.length());
                 }
+                else
+                    msj = "";
             }
+            Serial.println(">");
         }
     }
     delay(10);
