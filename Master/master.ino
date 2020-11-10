@@ -54,52 +54,24 @@ void loop()
     Serial.print(">");    // Fin de trama
     Serial.flush();       //Esperamos hasta que se envíen los datos
 
-    delay(30);
     digitalWrite(EnTxPin, LOW); //RS485 como receptor
+    delay(500);
 
     //----Leemos la respuesta del Esclavo-----
-    // while (!Serial.find("<"))
-    // {
-    // delay(1);
-    // }
-
-    String msj;
-    do
+    if (Serial.available()) // Si hay datos nuevos
     {
-        delay(1);
-        msj = Serial.readString();
-    } while (!msj.startsWith("<100")); // Si hay datos nuevos
+        String msj = Serial.readString();
+        // Serial.print("El msj: ");
+        // Serial.println("El msj: ");
+        if (msj.startsWith("<100"))
+        {
+            digitalWrite(ONBOARD_LED, HIGH);
+            delay(500);
+            digitalWrite(ONBOARD_LED, LOW);
+            delay(500);
+        }
+    }
 
-    // String msj = Serial.readString(); // Se lee una línea
-    // if (msj.startsWith("<100"))
-    // {
-    digitalWrite(ONBOARD_LED, HIGH);
-    delay(500);
-    digitalWrite(ONBOARD_LED, LOW);
-    delay(500);
-    // }
-
-    // lcd.setCursor(0, 1);
-    // lcd.print("S1:");
-    // lcd.print(msj);
-    // }
-
-    // lcd.setCursor(8, 1);
-    // lcd.print("S2:");
-
-    // Serial.println(msj);
-
-    // }
-
-    // if (Serial.find("i"))       //esperamos el inicio de trama
-    // {
-    //     int esclavo = Serial.parseInt();            //recibimos la direccion del esclavo
-    //     int dato = Serial.parseInt();               //recibimos el dato
-    //     if (Serial.read() == 'f' && esclavo == 101) //si fin de trama y direccion son los correctos
-    //     {
-    //         funcion(dato); //realizamos la acción con el dato recibido
-    //     }
-    // }
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
 }
 void funcion(int dato)
