@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#define ONBOARD_LED 2
 
 const int EnTxPin = 0; // D3 - HIGH:TX y LOW:RX
 
@@ -23,9 +24,9 @@ void setup()
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
     // inicializamos los pines
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(ONBOARD_LED, OUTPUT);
     pinMode(EnTxPin, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(ONBOARD_LED, LOW);
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
 
     // LCD
@@ -51,16 +52,29 @@ void loop()
     Serial.print("S2");   // Datos del sensor 2
     Serial.print(">");    // Fin de trama
     Serial.flush();       //Esperamos hasta que se envíen los datos
-    delay(100);
+    // delay(50);
+
+    digitalWrite(EnTxPin, LOW); //RS485 como receptor
+
+    // delay(100);
 
     //----Leemos la respuesta del Esclavo-----
-    digitalWrite(EnTxPin, LOW);       //RS485 como receptor
-                                      // if (Serial.find("i"))
-                                      // {
-    String msj = Serial.readString(); // Se lee una línea
-    lcd.setCursor(0, 1);
-    lcd.print("S1:");
-    lcd.print(msj);
+
+    if (Serial.find("<"))
+    {
+        String msj = Serial.readString(); // Se lee una línea
+
+        if (msj.startsWith("<100"))
+        {
+            digitalWrite(ONBOARD_LED, HIGH);
+            delay(500);
+            digitalWrite(ONBOARD_LED, LOW);
+            delay(500);
+        }
+    }
+    // lcd.setCursor(0, 1);
+    // lcd.print("S1:");
+    // lcd.print(msj);
     // }
 
     // lcd.setCursor(8, 1);
@@ -80,12 +94,11 @@ void loop()
     //     }
     // }
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
-                                 //----------fin de la respuesta----------
 }
 void funcion(int dato)
 {
     if (dato > 500)
-        digitalWrite(LED_BUILTIN, HIGH);
+        digitalWrite(ONBOARD_LED, HIGH);
     else
-        digitalWrite(LED_BUILTIN, LOW);
+        digitalWrite(ONBOARD_LED, LOW);
 }

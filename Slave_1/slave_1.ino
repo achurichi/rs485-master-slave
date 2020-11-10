@@ -26,6 +26,8 @@ void loop()
         {
             msj = msj.substring(4, msj.length() - 1); // Se descarta la información que no sea de los sensores a leer
 
+            digitalWrite(enTxPin, HIGH); //RS485 como emisor
+            // delay(50);
             Serial.print("<100");
             while (msj.length() != 0)
             {
@@ -49,6 +51,7 @@ void loop()
                     msj = "";
             }
             Serial.println(">");
+            digitalWrite(enTxPin, LOW); //RS485 como receptor
         }
     }
     delay(10);
