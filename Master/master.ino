@@ -24,10 +24,11 @@ void setup()
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
     // inicializamos los pines
-    pinMode(ONBOARD_LED, OUTPUT);
     pinMode(EnTxPin, OUTPUT);
-    digitalWrite(ONBOARD_LED, LOW);
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
+
+    pinMode(ONBOARD_LED, OUTPUT);
+    digitalWrite(ONBOARD_LED, LOW);
 
     // LCD
     lcd.init(); // initialize the lcd
@@ -52,26 +53,32 @@ void loop()
     Serial.print("S2");   // Datos del sensor 2
     Serial.print(">");    // Fin de trama
     Serial.flush();       //Esperamos hasta que se envíen los datos
-    // delay(50);
 
+    delay(30);
     digitalWrite(EnTxPin, LOW); //RS485 como receptor
 
-    // delay(100);
-
     //----Leemos la respuesta del Esclavo-----
+    // while (!Serial.find("<"))
+    // {
+    // delay(1);
+    // }
 
-    if (Serial.find("<"))
+    String msj;
+    do
     {
-        String msj = Serial.readString(); // Se lee una línea
+        delay(1);
+        msj = Serial.readString();
+    } while (!msj.startsWith("<100")); // Si hay datos nuevos
 
-        if (msj.startsWith("<100"))
-        {
-            digitalWrite(ONBOARD_LED, HIGH);
-            delay(500);
-            digitalWrite(ONBOARD_LED, LOW);
-            delay(500);
-        }
-    }
+    // String msj = Serial.readString(); // Se lee una línea
+    // if (msj.startsWith("<100"))
+    // {
+    digitalWrite(ONBOARD_LED, HIGH);
+    delay(500);
+    digitalWrite(ONBOARD_LED, LOW);
+    delay(500);
+    // }
+
     // lcd.setCursor(0, 1);
     // lcd.print("S1:");
     // lcd.print(msj);
