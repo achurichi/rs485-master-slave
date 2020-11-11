@@ -1,3 +1,6 @@
+#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)
+#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023)
+
 const int enTxPin = 2; // HIGH:TX y LOW:RX
 const int myDir = 101; //dir del esclavo
 
@@ -37,11 +40,13 @@ void loop()
                     {
                     case '1':
                         Serial.print("S1");
-                        Serial.print(analogRead(waterSensorPin));
+                        Serial.print(waterLvlConversion(analogRead(waterSensorPin)));
                         break;
                     case '2':
                         Serial.print("S2");
-                        Serial.print(analogRead(lightSensorPin));
+                        int light = ADC_TO_RESISTANCE(analogRead(lightSensorPin));
+                        light = LIGHT_CONVERSION(light);
+                        Serial.print(light);
                         break;
                     }
 
@@ -56,4 +61,18 @@ void loop()
             digitalWrite(enTxPin, LOW); //RS485 como receptor
         }
     }
+}
+
+int waterLvlConversion(int adc)
+{
+    if (adc >= 730)
+        return 100;
+    else if (adc >= 700)
+        return 75;
+    else if (adc >= 620)
+        return 50;
+    else if (adc >= 500)
+        return 25;
+    else
+        return 0;
 }
