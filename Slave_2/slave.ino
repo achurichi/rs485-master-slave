@@ -1,58 +1,59 @@
-#include <Servo.h>
+const int enTxPin = 2; // HIGH:TX y LOW:RX
+const int myDir = 102; //dir del esclavo
 
-Servo myservo;               // creamos el objeto servo
-const int EnTxPin = 2;       // HIGH:TX y LOW:RX
-const int mydireccion = 102; //Direccion del esclavo
+const int waterSensorPin = A0;
+const int lightSensorPin = A1;
+
 void setup()
 {
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
-    myservo.attach(9);      // asignamos el pin 9 para el servo.
-    pinMode(EnTxPin, OUTPUT);
-    digitalWrite(EnTxPin, LOW); //RS485 como receptor
+
+    pinMode(enTxPin, OUTPUT);
+    digitalWrite(enTxPin, LOW); //RS485 como receptor
+
+    pinMode(waterSensorPin, INPUT);
+    pinMode(lightSensorPin, INPUT);
 }
 
 void loop()
 {
-    if (Serial.available())
+    if (Serial.available()) // Si hay datos nuevos
     {
-        if (Serial.read() == 'I') //Si recibimos el inicio de trama
+        // Se lee una línea
+        String msj = Serial.readString();
+        if (msj.startsWith(String("<" + String(myDir))) && msj.endsWith(">")) //Si el inicio y fin del mensaje son correctos y la dirección corresponde a este esclavo
         {
-            int direccion = Serial.parseInt(); //recibimos la direccion
-            if (direccion == mydireccion)      //Si direccion es la nuestra
-            {
-                char funcion = Serial.read(); //leemos el carácter de función
+            msj = msj.substring(4, msj.length() - 1); // Se descarta la información que no sea de los sensores a leer
 
-                //---Si el carácter de función es una S entonces la trama es para mover el motor-----------
-                if (funcion == 'S')
+            delay(30);
+            digitalWrite(enTxPin, HIGH); //RS485 como emisor
+            Serial.print("<100");
+            while (msj.length() != 0)
+            {
+                if (msj.charAt(0) == 'S') // Se lee todos los sensores solicitados
                 {
-                    int angulo = Serial.parseInt(); //recibimos el ángulo
-                    if (Serial.read() == 'F')       //Si el fin de trama es el correcto
+                    switch (msj.charAt(1))
                     {
-                        if (angulo <= 180) //verificamos que sea un valor en el rango del servo
-                        {
-                            myservo.write(angulo); //movemos el servomotor al ángulo correspondiente.
-                        }
+                    case '1':
+                        Serial.print("S1");
+                        Serial.print(analogRead(waterSensorPin));
+                        break;
+                    case '2':
+                        Serial.print("S2");
+                        Serial.print(analogRead(lightSensorPin));
+                        break;
                     }
+
+                    msj = msj.substring(2, msj.length());
                 }
-                //---Si el carácter de función  es L entonces el maestro está solicitando una lectura del sensor---
-                else if (funcion == 'L')
-                {
-                    if (Serial.read() == 'F') //Si el fin de trama es el correcto
-                    {
-                        int lectura = analogRead(0); //realizamos  la lectura del sensor
-                        digitalWrite(EnTxPin, HIGH); //rs485 como transmisor
-                        Serial.print("i");           //inicio de trama
-                        Serial.print(mydireccion);   //direccion
-                        Serial.print(",");
-                        Serial.print(lectura);      //valor del sensor
-                        Serial.print("f");          //fin de trama
-                        Serial.flush();             //Esperamos hasta que se envíen los datos
-                        digitalWrite(EnTxPin, LOW); //RS485 como receptor
-                    }
-                }
+                else
+                    msj = "";
             }
+            Serial.print(">");
+            Serial.flush(); //Esperamos hasta que se envíen los datos
+
+            digitalWrite(enTxPin, LOW); //RS485 como receptor
         }
     }
-    delay(10);
 }

@@ -44,17 +44,32 @@ void setup()
 
 void loop()
 {
-    Serial.print("<");    // Inicio de trama
-    Serial.print(slave1); // Dirección del esclavo
-    Serial.print("S1");   // Datos del sensor 1
-    Serial.print("S2");   // Datos del sensor 2
-    Serial.print(">");    // Fin de trama
-    Serial.flush();       //Esperamos hasta que se envíen los datos
+    sendSlave(slave1);
+    readSlave("1");
 
+    delay(3000);
+
+    sendSlave(slave2);
+    readSlave("2");
+
+    delay(3000);
+}
+
+void sendSlave(int slaveDir)
+{
+    Serial.print("<");      // Inicio de trama
+    Serial.print(slaveDir); // Dirección del esclavo
+    Serial.print("S1");     // Datos del sensor 1
+    Serial.print("S2");     // Datos del sensor 2
+    Serial.print(">");      // Fin de trama
+    Serial.flush();         //Esperamos hasta que se envíen los datos
+}
+
+void readSlave(String slaveNumber)
+{
     digitalWrite(EnTxPin, LOW); //RS485 como receptor
     delay(500);
 
-    //----Leemos la respuesta del Esclavo-----
     if (Serial.available()) // Si hay datos nuevos
     {
         String msj = Serial.readString();
@@ -64,7 +79,7 @@ void loop()
             String sensorData;
 
             lcd.setCursor(8, 0);
-            lcd.print("1");
+            lcd.print(slaveNumber);
 
             while (msj.length() != 0) //Se leen, almacenan y muestran los datos
             {
@@ -89,9 +104,4 @@ void loop()
 
         digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
     }
-
-    // digitalWrite(ONBOARD_LED, HIGH);
-    // delay(500);
-    // digitalWrite(ONBOARD_LED, LOW);
-    // delay(500);
 }
