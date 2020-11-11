@@ -36,13 +36,10 @@ void setup()
     lcd.createChar(0, degree);
     lcd.setCursor(0, 0);
     lcd.print("Esclavo:");
-    // lcd.setCursor(0, 1);
-    // lcd.print("Set:");
-
-    // Show default setted value
-    // lcd.setCursor(5, 1);
-    // lcd.print(setTemp);
-    // lcd.write(0);
+    lcd.setCursor(0, 1);
+    lcd.print("S1:");
+    lcd.setCursor(8, 1);
+    lcd.print("S2:");
 }
 
 void loop()
@@ -61,23 +58,40 @@ void loop()
     if (Serial.available()) // Si hay datos nuevos
     {
         String msj = Serial.readString();
-        // Serial.print("El msj: ");
-        // Serial.println("El msj: ");
-        if (msj.startsWith("<100"))
+        if (msj.startsWith("<100") && msj.endsWith(">")) // Si la respuesta se recibió bien
         {
-            digitalWrite(ONBOARD_LED, HIGH);
-            delay(500);
-            digitalWrite(ONBOARD_LED, LOW);
-            delay(500);
+            msj = msj.substring(5, msj.length() - 1); // Eliminamos datos no necesarios
+            String sensorData;
+
+            lcd.setCursor(8, 0);
+            lcd.print("1");
+
+            while (msj.length() != 0) //Se leen, almacenan y muestran los datos
+            {
+                if (msj.charAt(0) != 'S')
+                    sensorData += msj.charAt(0);
+                else
+                {
+                    lcd.setCursor(3, 1);
+                    lcd.print("     ");
+                    lcd.setCursor(3, 1);
+                    lcd.print(sensorData);
+                    sensorData = "";
+                }
+
+                msj = msj.substring(1, msj.length());
+            }
+            lcd.setCursor(11, 1);
+            lcd.print("     ");
+            lcd.setCursor(11, 1);
+            lcd.print(sensorData);
         }
+
+        digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
     }
 
-    digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
-}
-void funcion(int dato)
-{
-    if (dato > 500)
-        digitalWrite(ONBOARD_LED, HIGH);
-    else
-        digitalWrite(ONBOARD_LED, LOW);
+    // digitalWrite(ONBOARD_LED, HIGH);
+    // delay(500);
+    // digitalWrite(ONBOARD_LED, LOW);
+    // delay(500);
 }

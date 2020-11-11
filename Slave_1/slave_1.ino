@@ -50,7 +50,7 @@ void loop()
                 else
                     msj = "";
             }
-            Serial.println(">");
+            Serial.print(">");
             Serial.flush(); //Esperamos hasta que se envíen los datos
 
             digitalWrite(enTxPin, LOW); //RS485 como receptor
