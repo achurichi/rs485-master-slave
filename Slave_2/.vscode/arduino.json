@@ -1,6 +1,6 @@
 {
-    "sketch": "slave.ino",
+    "sketch": "slave_2.ino",
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "port": "/dev/ttyUSB2"
+    "port": "/dev/ttyUSB0"
 }

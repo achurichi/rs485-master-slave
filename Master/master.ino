@@ -45,15 +45,14 @@ void setup()
 void loop()
 {
     sendSlave(slave1);
-    readSlave("1");
+    readSlave("1", "%", "LX");
 
-    delay(100);
-    // delay(3000);
+    delay(3000);
 
-    // sendSlave(slave2);
-    // readSlave("2");
+    sendSlave(slave2);
+    readSlave("2", "%", "LX");
 
-    // delay(3000);
+    delay(3000);
 }
 
 void sendSlave(int slaveDir)
@@ -66,7 +65,7 @@ void sendSlave(int slaveDir)
     Serial.flush();         //Esperamos hasta que se envíen los datos
 }
 
-void readSlave(String slaveNumber)
+void readSlave(String slaveNumber, String S1_unit, String S2_unit)
 {
     digitalWrite(EnTxPin, LOW); //RS485 como receptor
     delay(500);
@@ -92,7 +91,7 @@ void readSlave(String slaveNumber)
                     lcd.print("     ");
                     lcd.setCursor(3, 1);
                     lcd.print(sensorData);
-                    lcd.print("%");
+                    lcd.print(S1_unit);
                     sensorData = "";
                     msj = msj.substring(1, msj.length());
                 }
@@ -103,7 +102,7 @@ void readSlave(String slaveNumber)
             lcd.print("     ");
             lcd.setCursor(11, 1);
             lcd.print(sensorData);
-            lcd.print("LX");
+            lcd.print(S2_unit);
         }
 
         digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor

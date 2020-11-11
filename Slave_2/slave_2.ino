@@ -1,7 +1,16 @@
+#include <DHT_U.h>
+#include <DHT.h>
+
+#define DHTTYPE DHT11 // DHT 11
+
+#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)
+#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023)
+
 const int enTxPin = 2; // HIGH:TX y LOW:RX
 const int myDir = 102; //dir del esclavo
 
-const int waterSensorPin = A0;
+const int DHTPin = 7;
+DHT dht(DHTPin, DHTTYPE);
 const int lightSensorPin = A1;
 
 void setup()
@@ -12,7 +21,7 @@ void setup()
     pinMode(enTxPin, OUTPUT);
     digitalWrite(enTxPin, LOW); //RS485 como receptor
 
-    pinMode(waterSensorPin, INPUT);
+    dht.begin();
     pinMode(lightSensorPin, INPUT);
 }
 
@@ -37,11 +46,13 @@ void loop()
                     {
                     case '1':
                         Serial.print("S1");
-                        Serial.print(analogRead(waterSensorPin));
+                        Serial.print(int(dht.readHumidity()));
                         break;
                     case '2':
                         Serial.print("S2");
-                        Serial.print(analogRead(lightSensorPin));
+                        int light = ADC_TO_RESISTANCE(analogRead(lightSensorPin));
+                        light = LIGHT_CONVERSION(light);
+                        Serial.print(light);
                         break;
                     }
 

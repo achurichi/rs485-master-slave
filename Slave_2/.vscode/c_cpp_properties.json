@@ -3,6 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
+                "/home/alan/Arduino/libraries/DHT_sensor_library",
                 "/home/alan/Programas/arduino-1.8.13/tools/**",
                 "/home/alan/Programas/arduino-1.8.13/hardware/arduino/avr/**"
             ],
