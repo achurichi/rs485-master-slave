@@ -5,12 +5,12 @@ const char INDEX_HTML[] PROGMEM = R"=====(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Detector de Gases</title>
+    <title>TD3 TP7</title>
 </head>
 
 <body>
     <header class="site-header">
-        <h1>Detector de Gases</h1>
+        <h1>Técnicas Digitales 3 - TP 7</h1>
     </header>
 
     <div class="contenedor">
@@ -59,8 +59,8 @@ const char INDEX_HTML[] PROGMEM = R"=====(
                     if (respuesta.ok) {
                         respuesta.json().then(function (datos) {
                             slave = datos.slave;
-                            sensor1 = datos.sensor1 + "%";
-                            sensor2 = datos.sensor2 + "LX";
+                            sensor1 = datos.sensor1;
+                            sensor2 = datos.sensor2;
                             agregarFila();
                         })
                     }
@@ -108,7 +108,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
 
         // --------------- Funciones útiles --------------
 
-        //Se envia al equipo ordenes para que inice, continue o detenga el movimiento
+        //Se envia al equipo ordenes para iniciar o detener las lecturas
         function enviarDatosMovimiento(str) {
             fetch("/act_estado",
                 {
@@ -122,15 +122,6 @@ const char INDEX_HTML[] PROGMEM = R"=====(
                 })
                 .catch(function () {
                 })
-        }
-
-        //Limpia la tabla
-        function limpiarTabla() {
-            var rows = document.getElementById("dataTable").rows;
-            var i = rows.length;
-            while (--i) {
-                rows[i].parentNode.removeChild(rows[i]);
-            }
         }
 
         //Se muestran o se esconden los botones de detner e iniciar
@@ -149,16 +140,11 @@ const char INDEX_HTML[] PROGMEM = R"=====(
 
 <style>
     :root {
-        --naranja: #e16c2e;
-        --naranja-medio: #f06a22;
-        --naranja-oscuro: #a34e20;
         --rojo: #d23131;
         --rojo-oscuro: #9a1010;
         --verde: #059411;
         --verde-oscuro: #03770c;
-        --gris-claro: #dfdfdf;
-        --gris-oscuro: #979797;
-        --color-footer: rgb(49, 48, 48);
+        --gris: #dfdfdf;
     }
 
     html {
@@ -194,6 +180,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
 
     h2 {
         font-size: 3.6rem;
+        color: white;
         text-align: center;
         font-weight: 400;
     }
@@ -230,7 +217,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
         align-items: center;
         background-color: black;
         margin: 0 auto;
-        max-width: 140rem;
+        max-width: 100%;
         background-size: cover;
         background-position: cover;
         display: flex;
@@ -290,7 +277,7 @@ const char INDEX_HTML[] PROGMEM = R"=====(
     }
 
     .fila-titulo {
-        background: var(--gris-claro);
+        background: var(--gris);
     }
 </style>
 
