@@ -15,7 +15,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 char
 const int EnTxPin = 0; // D3 - HIGH:TX y LOW:RX
 const int slave1 = 101;
 const int slave2 = 102;
-bool act;
+bool act = false;
 String slave = "1";
 String sensor1;
 String sensor2;
@@ -45,11 +45,8 @@ void setup(void)
     wifiMulti.addAP("La casa de Avra y Piru", "laquevosquieras"); // Elegimos la red
 
     int i = 0;
-    while (wifiMulti.run() != WL_CONNECTED)
-    { // Se conecta a la red
+    while (wifiMulti.run() != WL_CONNECTED) // Se conecta a la red
         delay(250);
-        Serial.print('.');
-    }
 
     server.on("/", HTTP_GET, handleRoot); // Se llama 'handleRoot' cuando se solicita la URI "/"
     server.onNotFound(handleNotFound);    // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
@@ -68,6 +65,7 @@ void loop(void)
         sendSlave(slave1);
         readSlave(slave, "%", "LX");
         slave = "2";
+        Serial.println("leyendo slave 1");
         act_time = millis();
     }
     else if (act == true && act_time + 3000 == millis() && slave == "2")
@@ -75,6 +73,7 @@ void loop(void)
         sendSlave(slave2);
         readSlave(slave, "%", "LX");
         slave = "1";
+        Serial.println("leyendo slave 2");
         act_time = millis();
     }
 }
