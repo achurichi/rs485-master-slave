@@ -65,7 +65,6 @@ void loop(void)
         sendSlave(slave1);
         readSlave(slave, "%", "LX");
         slave = "2";
-        Serial.println("leyendo slave 1");
         act_time = millis();
     }
     else if (act == true && act_time + 3000 == millis() && slave == "2")
@@ -73,7 +72,6 @@ void loop(void)
         sendSlave(slave2);
         readSlave(slave, "%", "LX");
         slave = "1";
-        Serial.println("leyendo slave 2");
         act_time = millis();
     }
 }
@@ -111,7 +109,10 @@ void get_consultar()
     String jsonString;
     DynamicJsonDocument jsonDoc(1024);
 
-    jsonDoc["slave"] = slave;
+    if (slave == "1")
+        jsonDoc["slave"] = "2";
+    if (slave == "2")
+        jsonDoc["slave"] = "1";
     jsonDoc["sensor1"] = sensor1;
     jsonDoc["sensor2"] = sensor2;
 

@@ -96,20 +96,20 @@ const char INDEX_HTML[] PROGMEM = R"=====(
         function detenerLecturas() {
             clearInterval(intervalActualizarDatos);
             configBotonesDisplay(0, 1); // botones: detener(0), iniciar(1)
-            enviarDatosMovimiento("detener");
+            enviarDatos("detener");
         }
 
         //Da la orden de iniciar las lecturas
         function iniciarLecturas() {
             intervalActualizarDatos = setInterval(actualizarDatos, 3000);
             configBotonesDisplay(1, 0); // botones: detener(1), iniciar(0)
-            enviarDatosMovimiento("iniciar");
+            enviarDatos("iniciar");
         }
 
         // --------------- Funciones útiles --------------
 
         //Se envia al equipo ordenes para iniciar o detener las lecturas
-        function enviarDatosMovimiento(str) {
+        function enviarDatos(str) {
             fetch("/act_estado",
                 {
                     method: 'POST',
