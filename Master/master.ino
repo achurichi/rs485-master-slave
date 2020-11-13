@@ -7,19 +7,19 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-ESP8266WiFiMulti wifiMulti;  // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
-ESP8266WebServer server(80); // Create a webserver object that listens for HTTP request on port 80
+ESP8266WiFiMulti wifiMulti;  // Instancia para conectarse al WiFi
+ESP8266WebServer server(80); // Instancia de la clase WebServer que responde a peticiones HTTP en el puerto 80
 
-LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
+LiquidCrystal_I2C lcd(0x27, 16, 2); // Pantalla LCD de 16x2 en la Dirección I2C 0x27
 
-const int EnTxPin = 0; // D3 - HIGH:TX y LOW:RX
-const int slave1 = 101;
-const int slave2 = 102;
-bool act = false;
-String slave = "1";
-String sensor1;
-String sensor2;
-unsigned long act_time;
+const int EnTxPin = 0;  // D3 - HIGH:TX y LOW:RX
+const int slave1 = 101; // Dirección del esclavo 1
+const int slave2 = 102; // Dirección del esclavo 2
+bool act = false;       // True: Pedir datos y False: No pedir datos
+String slave = "1";     // El próximo esclavo a leer
+String sensor1;         // Valor en el sensor 1 de esclavo leído
+String sensor2;         // Valor en el sensor 2 de esclavo leído
+unsigned long act_time; // Contador para saber cuando leer
 
 void setup(void)
 {
@@ -27,7 +27,7 @@ void setup(void)
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
 
-    // inicializamos los pines
+    // inicialización de los pines
     pinMode(EnTxPin, OUTPUT);
     digitalWrite(EnTxPin, HIGH); //RS485 como Transmisor
 
@@ -42,49 +42,45 @@ void setup(void)
     lcd.print("S2:");
 
     // Configuracón del servidor
-    wifiMulti.addAP("La casa de Avra y Piru", "laquevosquieras"); // Elegimos la red
-
-    int i = 0;
-    while (wifiMulti.run() != WL_CONNECTED) // Se conecta a la red
+    wifiMulti.addAP("La casa de Avra y Piru", "laquevosquieras"); // Elegir a que red WiFi conectarse
+    while (wifiMulti.run() != WL_CONNECTED)                       // Se conecta a la red
         delay(250);
+    server.on("/", HTTP_GET, handleRoot); // Se llama "handleRoot" cuando se solicita la URL "/"
+    server.onNotFound(handleNotFound);    // Si se solicita una URL desconocida se llama a "handleNotFound"
+    server.begin();                       // Inicializar el servidor
 
-    server.on("/", HTTP_GET, handleRoot); // Se llama 'handleRoot' cuando se solicita la URI "/"
-    server.onNotFound(handleNotFound);    // When a client requests an unknown URI (i.e. something other than "/"), call function "handleNotFound"
-
-    server.begin(); // Actually start the server
-
-    act_time = millis();
+    act_time = millis(); // Inicializamos el contador
 }
 
 void loop(void)
 {
-    server.handleClient(); // Listen for HTTP requests from clients
+    server.handleClient(); // Se escuchan las peticiones HTTP de los clientes
 
     if (act == true && act_time + 3000 == millis() && slave == "1")
     {
-        sendSlave(slave1);
-        readSlave(slave, "%", "LX");
-        slave = "2";
-        act_time = millis();
+        sendSlave(slave1);           // Se piden datos al esclavo 1
+        readSlave(slave, "%", "LX"); // Se leen los datos del esclavo 1 y se muestran por pantalla
+        slave = "2";                 // El próximo esclabo a leer es el 2
+        act_time = millis();         // Se actualiza el contador
     }
     else if (act == true && act_time + 3000 == millis() && slave == "2")
     {
-        sendSlave(slave2);
-        readSlave(slave, "%", "LX");
-        slave = "1";
-        act_time = millis();
+        sendSlave(slave2);           // Se piden datos al esclavo 2
+        readSlave(slave, "%", "LX"); // Se leen los datos del esclavo 2 y se muestran por pantalla
+        slave = "1";                 // El próximo esclabo a leer es el 1
+        act_time = millis();         // Se actualiza el contador
     }
 }
 
 void handleRoot()
-{ // When URI / is requested, send a web page with a button to toggle the LED
+{ // Las URL que se pueden solicitar junto con los verbos HTTP y la función a la que llaman
     server.send(200, "text/html", INDEX_HTML);
     server.on("/act_estado", HTTP_POST, post_act_estado);
     server.on("/consultar", HTTP_GET, get_consultar);
 }
 
 void post_act_estado()
-{
+{ // Actualiza el estado para leer o no a los esclavos
     StaticJsonDocument<500> jsonDoc;
     auto error = deserializeJson(jsonDoc, server.arg("plain"));
 
@@ -105,7 +101,7 @@ void post_act_estado()
 }
 
 void get_consultar()
-{
+{ // Se envía al cliente la información sobre el último sensor leido
     String jsonString;
     DynamicJsonDocument jsonDoc(1024);
 
@@ -121,12 +117,12 @@ void get_consultar()
 }
 
 void handleNotFound()
-{
-    server.send(404, "text/plain", "404: Not found"); // Send HTTP status 404 (Not Found) when there's no handler for the URI in the request
+{                                                     
+    server.send(404, "text/plain", "404: Not found"); // Si se solicita una URL desconocida se muestra un error 404
 }
 
 void sendSlave(int slaveDir)
-{
+{                           // Se le solicita al esclavo información sobre los sensores 1 y 2
     Serial.print("<");      // Inicio de trama
     Serial.print(slaveDir); // Dirección del esclavo
     Serial.print("S1");     // Datos del sensor 1
@@ -136,7 +132,7 @@ void sendSlave(int slaveDir)
 }
 
 void readSlave(String slaveNumber, String S1_unit, String S2_unit)
-{
+{                               // Se leen los datos de los sensores del esclavo, se almacenan y se muestran en la pantalla LCD
     digitalWrite(EnTxPin, LOW); //RS485 como receptor
     delay(500);
 

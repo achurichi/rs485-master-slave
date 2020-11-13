@@ -1,17 +1,19 @@
-#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)
-#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023)
+#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)   // Macro para convertir de valor de resistencia a valor de luz en LUX
+#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023) // Macro para convertir de valor de adc a resistencia
 
 const int enTxPin = 2; // HIGH:TX y LOW:RX
-const int myDir = 101; //dir del esclavo
+const int myDir = 101; // Dirección del esclavo
 
-const int waterSensorPin = A0;
-const int lightSensorPin = A1;
+const int waterSensorPin = A0; // Pin del sensor
+const int lightSensorPin = A1; // Pin del sensor
 
 void setup()
 {
+    // Comunicación Serial
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
 
+    // inicialización de los pines
     pinMode(enTxPin, OUTPUT);
     digitalWrite(enTxPin, LOW); //RS485 como receptor
 
@@ -40,13 +42,13 @@ void loop()
                     {
                     case '1':
                         Serial.print("S1");
-                        Serial.print(waterLvlConversion(analogRead(waterSensorPin)));
+                        Serial.print(waterLvlConversion(analogRead(waterSensorPin))); // Se lee el sensor, se adapta el valor y se envía
                         break;
                     case '2':
                         Serial.print("S2");
                         int light = ADC_TO_RESISTANCE(analogRead(lightSensorPin));
                         light = LIGHT_CONVERSION(light);
-                        Serial.print(light);
+                        Serial.print(light); // Se lee el sensor, se adapta el valor y se envía
                         break;
                     }
 
@@ -64,7 +66,7 @@ void loop()
 }
 
 int waterLvlConversion(int adc)
-{
+{ // Función para convertir el valor analógico leido a una valor porcentual
     if (adc >= 730)
         return 100;
     else if (adc >= 700)

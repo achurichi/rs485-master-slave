@@ -1,23 +1,25 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
-#define DHTTYPE DHT11 // DHT 11
+#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)   // Macro para convertir de valor de resistencia a valor de luz en LUX
+#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023) // Macro para convertir de valor de adc a resistencia
 
-#define LIGHT_CONVERSION(value) 2e7 * pow(value, -1.449)
-#define ADC_TO_RESISTANCE(adc) -(1e5 * adc) / (adc - 1023)
+#define DHTTYPE DHT11 // DHT 11
 
 const int enTxPin = 2; // HIGH:TX y LOW:RX
 const int myDir = 102; //dir del esclavo
 
-const int DHTPin = 7;
-DHT dht(DHTPin, DHTTYPE);
-const int lightSensorPin = A1;
+const int DHTPin = 7;          // Pin del sensor
+DHT dht(DHTPin, DHTTYPE);      // Objeto para el DHT
+const int lightSensorPin = A1; // Pin del sensor
 
 void setup()
 {
+    // Comunicación Serial
     Serial.begin(9600);
     Serial.setTimeout(100); //establecemos un tiempo de espera de 100ms
 
+    // inicialización de los pines
     pinMode(enTxPin, OUTPUT);
     digitalWrite(enTxPin, LOW); //RS485 como receptor
 
@@ -46,13 +48,13 @@ void loop()
                     {
                     case '1':
                         Serial.print("S1");
-                        Serial.print(int(dht.readHumidity()));
+                        Serial.print(int(dht.readHumidity())); // Se lee el sensor, se adapta el valor y se envía
                         break;
                     case '2':
                         Serial.print("S2");
                         int light = ADC_TO_RESISTANCE(analogRead(lightSensorPin));
                         light = LIGHT_CONVERSION(light);
-                        Serial.print(light);
+                        Serial.print(light); // Se lee el sensor, se adapta el valor y se envía
                         break;
                     }
 
